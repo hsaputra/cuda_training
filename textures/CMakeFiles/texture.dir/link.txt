@@ -1,0 +1,1 @@
+/usr/bin/g++   CMakeFiles/texture.dir/texture.cu.o CMakeFiles/texture.dir/cmake_device_link.o -o texture  -L"/usr/local/cuda/targets/x86_64-linux/lib/stubs" -L"/usr/local/cuda/targets/x86_64-linux/lib" -lcudadevrt -lcudart_static -lrt -lpthread -ldl

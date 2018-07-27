@@ -1,0 +1,1 @@
+/usr/local/cuda/bin/nvcc  -gencode arch=compute_37,code=sm_37  -Xcompiler=-fPIC -Wno-deprecated-gpu-targets -shared -dlink CMakeFiles/transpose.dir/transpose.cu.o -o CMakeFiles/transpose.dir/cmake_device_link.o 

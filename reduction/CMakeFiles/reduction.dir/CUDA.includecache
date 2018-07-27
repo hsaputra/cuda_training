@@ -1,0 +1,18 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/hsaputra/cuda/common.h
+stdio.h
+-
+
+/home/hsaputra/cuda/reduction/reduction.cu
+cuda_runtime.h
+-
+../common.h
+/home/hsaputra/cuda/common.h
+

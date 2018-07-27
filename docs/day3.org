@@ -1,0 +1,29 @@
+* Day 3 API
+
+\TODO Why are we asking students to do reduction using warp shuffle as their
+first reduction exercise? Is slide just #21 misplaced?
+
+** Histogram and atomic reduction:
+
+#+BEGIN_SRC C++
+  T atomicAdd (T *address, T val);
+  T atomicSub (T *address, T val);
+  T atomicExch(T *address, T val);
+  T atomicMin (T *address, T val);
+  T atomicMax (T *address, T val);
+  T atomicInc (T *address, T val);
+  T atomicDec (T *address, T val);
+  T atomicCAS (T *address, T compare, T val); // Compare-and-store
+  T atomicAnd (T *address, T val);
+  T atomicOr  (T *address, T val);
+  T atomicXor (T *address, T val);
+#+END_SRC
+
+** Reduction using warp shuffle:
+
+#+BEGIN_SRC C++
+  T __shfl_sync     (unsigned mask, T var,        int srcLane, int width=warpSize);
+  T __shfl_up_sync  (unsigned mask, T var, unsigned int delta, int width=warpSize);
+  T __shfl_down_sync(unsigned mask, T var, unsigned int delta, int width=warpSize);
+  T __shfl_xor_sync (unsigned mask, T var,       int laneMask, int width=warpSize);
+#+END_SRC

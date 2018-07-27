@@ -1,0 +1,22 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/hsaputra/cuda/common.h
+stdio.h
+-
+
+/home/hsaputra/cuda/intro/vector_addition.cu
+iostream
+-
+vector
+-
+cuda.h
+/home/hsaputra/cuda/intro/cuda.h
+../common.h
+/home/hsaputra/cuda/common.h
+

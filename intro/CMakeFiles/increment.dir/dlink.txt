@@ -1,0 +1,1 @@
+/usr/local/cuda/bin/nvcc  -gencode arch=compute_37,code=sm_37  -Xcompiler=-fPIC -Wno-deprecated-gpu-targets -shared -dlink CMakeFiles/increment.dir/increment.cu.o -o CMakeFiles/increment.dir/cmake_device_link.o 

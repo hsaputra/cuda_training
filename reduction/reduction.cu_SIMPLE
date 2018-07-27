@@ -1,0 +1,109 @@
+#include <cuda_runtime.h>
+
+#include "../common.h"
+
+
+static int reduceCPU(int *data, int n)
+{
+    int sum = 0;
+    for (int i = 0; i < n; i++)
+        sum += data[i];
+    return sum;
+}
+
+const int n = (1 << 22);  // number of elements to reduce
+const int BLOCK_SIZE = 512;
+
+// TODO put your kernel here
+__global__ 
+void reduceGPU(int* d_odata, int* d_idata, int n) {
+
+  __shared__ int blockReduce[BLOCK_SIZE];
+
+  // Get Current index for the thread.
+  int index = blockIdx.x * blockDim.x + threadIdx.x;
+
+  // Coalesce read from global memory and write it to shared memory.
+  blockReduce[threadIdx.x] = d_idata[index];
+
+  // Sync threads
+  __syncthreads();
+
+
+  // Compute the reduce from shared memory.
+  int blockTotal = 0;
+  if (threadIdx.x == 0) {
+    for (int i = 0 ; i < blockDim.x; i++) {
+       blockTotal += blockReduce[i];       
+    }
+
+    // And store back to global memory.
+    d_odata[blockIdx.x] = blockTotal;
+  }
+}
+
+int main()
+{
+    // int n = (1 << 22);  // number of elements to reduce
+
+    unsigned bytes = n * sizeof(int);
+    int *h_idata = (int *) malloc(bytes);
+    for (int i=0; i<n; i++)
+        h_idata[i] = (int)(rand() & 0xFF);
+
+    // TODO determine numBlocks and numThreads
+    int numBlocks = divup(n, BLOCK_SIZE);
+    int numThreads = BLOCK_SIZE;
+
+    // allocate device memory and data
+    int *d_idata = NULL, *d_odata = NULL;
+    CUDA(cudaMalloc((void **) &d_idata, bytes));
+    CUDA(cudaMalloc((void **) &d_odata, numBlocks*sizeof(int)));  // FIX
+
+    // copy data to device memory
+    CUDA(cudaMemcpy(d_idata, h_idata, bytes, cudaMemcpyHostToDevice));
+
+    int gpu_result = 0;
+    cudaEvent_t start, stop;
+    CUDA(cudaEventCreate(&start));
+    CUDA(cudaEventCreate(&stop));
+
+    // Start record
+    CUDA(cudaEventRecord(start, 0));
+
+    // TODO call your reduce kernel(s) with the right parameters
+    // INPUT:       d_idata
+    // OUTPUT:      d_odata
+    // ELEMENTS:    n
+
+    // (1) reduce across all elements
+    reduceGPU<<<numBlocks, numThreads>>>(d_odata, d_idata, n);
+
+    // (2) reduce across all blocks
+    size_t block_bytes = numBlocks * sizeof(int);
+    int *h_blocks = (int *)malloc(block_bytes);
+    CUDA(cudaMemcpy(h_blocks, d_odata, block_bytes, cudaMemcpyDeviceToHost));
+    for (int i = 0; i < numBlocks; ++i)
+        gpu_result += h_blocks[i];
+
+    CUDA(cudaEventRecord(stop, 0));
+    CUDA(cudaEventSynchronize(stop));
+    float time_ms;
+    CUDA(cudaEventElapsedTime(&time_ms, start, stop)); // that's the time your kernel took to run in ms!
+    printf("bandwidth %.2f GB/s   elements %u   blocks %u   threads %u\n",
+           1e-9 * bytes/(time_ms/1e3), n, numBlocks, numThreads);
+
+    // check result against CPU
+    int cpu_result = reduceCPU(h_idata, n);
+    printf("gpu %u   cpu %u   ", gpu_result, cpu_result);
+    printf((gpu_result==cpu_result) ? "pass\n" : "FAIL\n");
+
+    // cleanup
+    CUDA(cudaEventDestroy(start));
+    CUDA(cudaEventDestroy(stop));
+    free(h_idata);
+    CUDA(cudaFree(d_idata));
+    CUDA(cudaFree(d_odata));
+
+    return 0;
+}
